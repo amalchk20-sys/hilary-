@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A date invitation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=DM+Sans:wght@400;600&display=swap">
+<style>
+:root{--bg:#f3d9d4;--card:#fff6ee;--ink:#2b1230;--rose:#d63c72;--soft:#7a5a74;--line:#e2c6c0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d0b22}}
+:root[data-theme="dark"]{--bg:#1d0b22}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100%;background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);display:flex;padding:16px}
+.card{position:relative;width:100%;max-width:400px;margin:auto;background:var(--card);border-radius:28px;padding:36px 24px 28px;text-align:center;box-shadow:0 24px 60px rgba(43,18,48,.35);overflow:hidden}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:2rem;line-height:1.15;margin:10px 0 8px}
+p{margin:0;color:var(--soft);line-height:1.5}
+.heart{font-size:2.8rem;display:inline-block;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.hi{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.5rem;color:var(--rose);margin-top:8px}
+.row{position:relative;height:130px;margin-top:30px}
+button{font:600 1rem 'DM Sans',system-ui,sans-serif;border:0;border-radius:999px;padding:14px 34px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#yes{background:var(--rose);color:#fff;position:absolute;left:calc(50% - 150px);top:20px;min-width:120px}
+#no{background:#e6d7d2;color:#9b8a86;position:absolute;left:calc(50% + 30px);top:20px;min-width:120px;cursor:not-allowed;transition:left .25s,top .25s}
+section{display:none}
+section.on{display:block}
+
+.cal{margin-top:20px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nav b{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.2rem}
+.nav button{background:transparent;color:var(--ink);padding:6px 14px;font-size:1.3rem}
+.nav button:disabled{opacity:.25;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{font-size:.8rem;color:var(--soft);padding:4px 0}
+.day{padding:0;height:40px;border-radius:12px;background:transparent;color:var(--ink);font-weight:400}
+.day:disabled{color:#c9b6b0;cursor:not-allowed}
+.day:not(:disabled):hover{background:#f6dfe3}
+.day.sel{background:var(--rose);color:#fff;font-weight:600}
+.day.today{box-shadow:inset 0 0 0 2px var(--line)}
+.times{margin-top:18px;border-top:2px dashed var(--line);padding-top:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.chip{padding:9px 14px;font-size:.9rem;background:#f6e8e2;color:var(--ink);font-weight:400}
+.chip.sel{background:var(--rose);color:#fff;font-weight:600}
+.custom{margin-top:12px;font-size:.9rem;color:var(--soft)}
+.custom input{font:inherit;margin-left:6px;padding:6px 10px;border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+#confirm{margin-top:20px;background:var(--rose);color:#fff;width:100%}
+#confirm:disabled{background:#e6d7d2;color:#9b8a86;cursor:not-allowed}
+.when{margin-top:22px;border-top:2px dashed var(--line);padding-top:20px}
+.date{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;margin:4px 0}
+.time{font-size:1.3rem;font-weight:600;color:var(--rose)}
+.link{background:transparent;color:var(--soft);text-decoration:underline;font-weight:400;margin-top:14px;padding:8px}
+@media (prefers-reduced-motion:reduce){.heart{animation:none}#no{transition:none}}
+</style>
+</head>
+<body>
+<main class="card">
+
+  <section id="ask" class="on">
+    <div class="heart" aria-hidden="true">💌</div>
+    <p class="hi">Hi Hilary,</p>
+    <h1>Will you go on a date with me?</h1>
+    <p>Pick one. Only one of them works.</p>
+    <div class="row" id="row">
+      <button id="yes">Yes</button>
+      <button id="no" aria-disabled="true" tabindex="-1">No</button>
+    </div>
+  </section>
+
+  <section id="pick">
+    <div class="heart" aria-hidden="true">💖</div>
+    <h1>Yay! You choose.</h1>
+    <p>Pick the day and time that suits you best.</p>
+    <div class="cal">
+      <div class="nav">
+        <button id="prev" aria-label="Previous month">‹</button>
+        <b id="month"></b>
+        <button id="next" aria-label="Next month">›</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="times" id="times" hidden>
+      <p>What time?</p>
+      <div class="chips" id="chips"></div>
+      <label class="custom">Or any time:<input type="time" id="custom"></label>
+    </div>
+    <button id="confirm" disabled>Pick a day first</button>
+  </section>
+
+  <section id="done" aria-live="polite">
+    <div class="heart" aria-hidden="true">🥰</div>
+    <h1>It's a date!</h1>
+    <p>I can't wait. See you then.</p>
+    <div class="when">
+      <p>Date</p>
+      <div class="date" id="dateText"></div>
+      <p style="margin-top:14px">Time</p>
+      <div class="time" id="timeText"></div>
+    </div>
+    <button class="link" id="change">Change day or time</button>
+  </section>
+
+</main>
+
+<script>
+var $ = function(id){ return document.getElementById(id); };
+function show(id){ ['ask','pick','done'].forEach(function(s){ $(s).classList.toggle('on', s===id); }); }
+
+/* ---- the unclickable No ---- */
+var row = $('row'), no = $('no');
+function dodge(e){
+  if(e) e.preventDefault();
+  var r = row.getBoundingClientRect();
+  no.style.left = Math.random()*(r.width - no.offsetWidth) + 'px';
+  no.style.top = Math.random()*(r.height - no.offsetHeight) + 'px';
+}
+['pointerenter','pointerdown','touchstart','focus'].forEach(function(ev){ no.addEventListener(ev, dodge, {passive:false}); });
+no.addEventListener('click', function(e){ e.preventDefault(); dodge(); });
+$('yes').addEventListener('click', function(){ show('pick'); });
+
+/* ---- calendar ---- */
+var today = new Date(); today.setHours(0,0,0,0);
+var view = new Date(today.getFullYear(), today.getMonth(), 1);
+var pickedDate = null, pickedTime = null;
+var TIMES = ['12:00','14:00','16:00','18:00','19:00','20:00','21:00'];
+
+function fmtTime(t){
+  var p = t.split(':'), h = +p[0], m = p[1];
+  return (h%12||12) + ':' + m + ' ' + (h>=12?'PM':'AM');
+}
+function same(a,b){ return a && b && a.getTime()===b.getTime(); }
+
+function renderCal(){
+  $('month').textContent = view.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  $('prev').disabled = view <= new Date(today.getFullYear(), today.getMonth(), 1);
+  var g = $('grid'); g.innerHTML = '';
+  ['S','M','T','W','T','F','S'].forEach(function(d){
+    var c = document.createElement('div'); c.className='dow'; c.textContent=d; g.appendChild(c);
+  });
+  for(var i=0;i<view.getDay();i++) g.appendChild(document.createElement('span'));
+  var n = new Date(view.getFullYear(), view.getMonth()+1, 0).getDate();
+  for(var d=1; d<=n; d++){
+    (function(d){
+      var dt = new Date(view.getFullYear(), view.getMonth(), d);
+      var b = document.createElement('button');
+      b.className = 'day' + (same(dt,today)?' today':'') + (same(dt,pickedDate)?' sel':'');
+      b.textContent = d;
+      b.disabled = dt < today;
+      b.addEventListener('click', function(){ pickedDate = dt; $('times').hidden = false; renderCal(); updateConfirm(); });
+      g.appendChild(b);
+    })(d);
+  }
+}
+$('prev').addEventListener('click', function(){ view = new Date(view.getFullYear(), view.getMonth()-1, 1); renderCal(); });
+$('next').addEventListener('click', function(){ view = new Date(view.getFullYear(), view.getMonth()+1, 1); renderCal(); });
+
+function renderChips(){
+  var c = $('chips'); c.innerHTML = '';
+  TIMES.forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'chip' + (pickedTime===t?' sel':'');
+    b.textContent = fmtTime(t);
+    b.addEventListener('click', function(){ pickedTime = t; $('custom').value = ''; renderChips(); updateConfirm(); });
+    c.appendChild(b);
+  });
+}
+$('custom').addEventListener('input', function(){
+  pickedTime = this.value || null; renderChips(); updateConfirm();
+});
+
+function updateConfirm(){
+  var b = $('confirm');
+  b.disabled = !(pickedDate && pickedTime);
+  b.textContent = !pickedDate ? 'Pick a day first' : !pickedTime ? 'Now pick a time' : 'Confirm our date';
+}
+$('confirm').addEventListener('click', function(){
+  $('dateText').textContent = pickedDate.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  $('timeText').textContent = fmtTime(pickedTime);
+  show('done');
+});
+$('change').addEventListener('click', function(){ show('pick'); });
+
+renderCal(); renderChips(); updateConfirm();
+</script>
+</body>
+</html>
